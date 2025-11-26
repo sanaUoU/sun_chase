@@ -1,0 +1,42 @@
+name: Build Game EXE
+
+# 触发条件：当你把代码推送到 main 分支时自动运行
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # 允许你手动点击按钮触发
+
+jobs:
+  build:
+    runs-on: windows-latest # 指定使用 GitHub 的 Windows 服务器
+
+    steps:
+    # 1. 把你的代码下载到服务器
+    - uses: actions/checkout@v4
+
+    # 2. 安装 Python 3.12
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    # 3. 安装依赖库 (Pygame 和 打包工具 PyInstaller)
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pygame pyinstaller
+
+    # 4. 开始打包
+    # --onefile: 打包成单文件
+    # --noconsole: 运行时不显示黑框 (如果你想看报错，可以去掉这个参数)
+    # --name: 生成的 exe 名字
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile --noconsole --name OrbitalSim main.py
+
+    # 5. 把生成的 exe 上传供你下载
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Orbital-Physics-Game-Windows
+        path: dist/OrbitalSim.exe
